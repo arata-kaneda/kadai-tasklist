@@ -53,6 +53,7 @@ class TasksController extends Controller
         $task = new Task;
         $task->content = $request->content;
         $task->status = $request->status;
+        $task->user_id = $user = \Auth::user()->id;
         $task->save();
         
         return redirect('/');
@@ -67,10 +68,15 @@ class TasksController extends Controller
     public function show($id)
     {
         $task = Task::find($id);
-
-        return view('tasks.show', [
-            'task' => $task,
-        ]);
+        $user =  \Auth::user();
+        
+        if($task->user_id == $user->id){
+            return view('tasks.show', [
+                'task' => $task,
+            ]);
+        }else{
+            return redirect('/');
+        }
     }
 
     /**
@@ -82,10 +88,16 @@ class TasksController extends Controller
     public function edit($id)
     {
         $task = Task::find($id);
-
-        return view('tasks.edit', [
-            'task' => $task,
-        ]);
+        
+        $user =  \Auth::user();
+        
+        if($task->user_id == $user->id){
+            return view('tasks.edit', [
+                'task' => $task,
+            ]);
+        }else{
+            return redirect('/');
+        }
     }
 
     /**
@@ -103,9 +115,12 @@ class TasksController extends Controller
         ]);
         
         $task = Task::find($id);
-        $task->content = $request->content;
-        $task->status = $request->status;
-        $task->save();
+        $user =  \Auth::user();
+        if($task->user_id == $user->id){
+            $task->content = $request->content;
+            $task->status = $request->status;
+            $task->save();
+        }
 
         return redirect('/');
     }
@@ -119,8 +134,10 @@ class TasksController extends Controller
     public function destroy($id)
     {
         $task = Task::find($id);
-        $task->delete();
-        
+        $user =  \Auth::user();
+        if($task->user_id == $user->id){
+            $task->delete();
+        }
         return redirect('/');
     }
 }
